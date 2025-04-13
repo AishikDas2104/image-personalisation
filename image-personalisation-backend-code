@@ -1,0 +1,37 @@
+// === 📁 server/index.js ===
+
+const express = require('express');
+const cors = require('cors');
+const bodyParser = require('body-parser');
+const Replicate = require('replicate');
+const app = express();
+app.use(cors());
+app.use(bodyParser.json());
+
+const replicate = new Replicate({
+  auth: 'YOUR_REPLICATE_API_TOKEN',
+});
+
+app.post('/cartoonify-image', async (req, res) => {
+  const { imageUrl } = req.body;
+
+  try {
+    const output = await replicate.run("tencentarc/gfpgan:1.4", {
+      input: {
+        img: imageUrl,
+        scale: 2,
+        version: "v1.3",
+        face_enhance: true,
+      },
+    });
+
+    res.json({ cartoonImageUrl: output });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to process image' });
+  }
+});
+
+app.listen(3000, () => {
+  console.log("Server running on http://localhost:3000");
+});
